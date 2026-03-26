@@ -5,6 +5,9 @@ name: Create FRONT Docker image & publish it
 on:
   push:
     branches: ['main']
+    paths:
+      - ./client/**
+  workflow_dispatch:
 
 # Defines two custom environment variables for the workflow. These are used for the Container registry domain, and a name for the Docker image that this workflow builds.
 env:
@@ -43,14 +46,15 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           # tags:
           # - Branch name (e.g., `main`, `feature-branch-1`)
-          # - Semantic version (e.g., `1.0.0`)
+          # - Semantic version (e.g., `1.0.0`) if present in the git tags
           # - "latest" tag for the default branch (e.g., `main`)
           # - git SHA (e.g., `sha-abc1234`)
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}},enable={{is_default_branch}}
+            type=semver,pattern={{major}}.{{minor}}.{{patch}},enable={{is_default_branch}}
             type=raw,value=latest,enable={{is_default_branch}}
+            type=sha,format=long
   
           
       - name: Build and push Docker image
