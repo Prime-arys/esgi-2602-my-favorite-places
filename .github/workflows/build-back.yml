@@ -1,0 +1,65 @@
+#
+name: Create SERVER Docker image & publish it
+
+# Configures this workflow to run every time a change is pushed to the branch called `main`.
+on:
+  push:
+    branches: ['main']
+
+# Defines two custom environment variables for the workflow. These are used for the Container registry domain, and a name for the Docker image that this workflow builds.
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}-server
+
+# There is a single job in this workflow. It's configured to run on the latest available version of Ubuntu.
+jobs:
+  build-and-push-image:
+    runs-on: ubuntu-latest
+    # Sets the permissions granted to the `GITHUB_TOKEN` for the actions in this job.
+    permissions:
+      contents: read
+      packages: write
+      attestations: write
+      id-token: write
+      #
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+      
+
+      - name: Log in to the Container registry
+        uses: docker/login-action@v4
+        with:
+          # ici, tout est déjà défini par github lui même, on n'a pas besoin de le redéfinir dans les secrets ou en variables d'environnement.
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          # tags:
+          # - Branch name (e.g., `main`, `feature-branch-1`)
+          # - Semantic version (e.g., `1.0.0`)
+          # - "latest" tag for the default branch (e.g., `main`)
+          # - git SHA (e.g., `sha-abc1234`)
+          tags: |
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}},enable={{is_default_branch}}
+            type=raw,value=latest,enable={{is_default_branch}}
+          
+      - name: Build and push Docker image
+        id: push
+        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+        with:
+          context: ./server
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+      
+
+      
