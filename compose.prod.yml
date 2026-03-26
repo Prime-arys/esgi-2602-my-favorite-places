@@ -1,0 +1,40 @@
+services:
+  client:
+    image: ghcr.io/prime-arys/esgi-2602-my-favorite-places-client:latest
+    container_name: client
+    ports:
+      - "8080:8080"
+    networks:
+      - net1
+    depends_on:
+      - server
+
+  server:
+    image: ghcr.io/prime-arys/esgi-2602-my-favorite-places-server:latest
+    container_name: server
+    ports:
+      - "3000:3000"
+    networks:
+      - net1
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: postgres:latest
+    container_name: db
+    environment:
+      POSTGRES_PASSWORD: mysecretpassword
+    ports:
+      - "5432:5432"
+    networks:
+      - net1
+    volumes:
+      - db_data_volume:/var/lib/postgresql
+
+networks:
+  net1:
+    driver: bridge
+
+volumes:
+  db_data_volume:
