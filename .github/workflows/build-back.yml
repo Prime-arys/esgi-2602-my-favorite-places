@@ -4,7 +4,11 @@ name: Create SERVER Docker image & publish it
 # Configures this workflow to run every time a change is pushed to the branch called `main`.
 on:
   push:
-    branches: ['main']
+    branches: ["main"]
+    # build une image pour back et front à chaque fois qu'on push une nouvelle version (tag) sur un commit
+    tags:
+      - "v*"
+      - "*.*.*"
     paths:
       - server/**
   workflow_dispatch:
@@ -30,7 +34,9 @@ jobs:
         uses: actions/checkout@v5
         with:
           fetch-depth: 0
-      
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
 
       - name: Log in to the Container registry
         uses: docker/login-action@v4
@@ -39,7 +45,6 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
@@ -48,24 +53,22 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           # tags:
           # - Branch name (e.g., `main`, `feature-branch-1`)
-          # - Semantic version (e.g., `1.0.0`) if present in the git tags
+          # - Semantic version (e.g., `v1.0.0`) if present in the git tags
           # - "latest" tag for the default branch (e.g., `main`)
           # - git SHA (e.g., `sha-abc1234`)
           tags: |
             type=ref,event=branch
             type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}.{{patch}},enable={{is_default_branch}}
+            type=semver,pattern=v{{major}}.{{minor}},enable={{is_default_branch}}
+            type=semver,pattern=v{{major}},enable={{is_default_branch}}
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,format=long
-          
+
       - name: Build and push Docker image
         id: push
-        uses: docker/build-push-action@f2a1d5e99d037542a71f64918e516c093c6f3fc4
+        uses: docker/build-push-action@v7
         with:
           context: ./server
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-      
-
-      
