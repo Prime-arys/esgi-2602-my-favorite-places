@@ -7,8 +7,8 @@ on:
     branches: ["main"]
     # build une image pour back et front à chaque fois qu'on push une nouvelle version (tag) sur un commit
     tags:
-      - "v*"
-      - "*.*.*"
+      - "server-v*"
+      - "server-*.*.*"
     paths:
       - server/**
   workflow_dispatch:
