@@ -1,0 +1,30 @@
+name: Test SERVER
+
+on:
+  push:
+    paths:
+      - server/**
+      - .github/workflows/test-back.yml
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        run: |
+          cd server
+          yarn install
+
+      - name: Run tests
+        run: |
+          cd server
+          yarn test
