@@ -4,11 +4,8 @@ name: (DEV) Create SERVER Docker image & publish it
 # Configures this workflow to run every time a change is pushed to the branch called `main`.
 on:
   push:
-    branches: ["main"]
+    branches: ["dev"]
     # build une image pour back et front à chaque fois qu'on push une nouvelle version (tag) sur un commit
-    tags:
-      - "server-v*"
-      - "server-*.*.*"
     paths:
       - server/**
   workflow_dispatch:
