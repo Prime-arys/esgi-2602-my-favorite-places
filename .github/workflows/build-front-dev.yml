@@ -1,20 +1,19 @@
 #
-name: Create SERVER Docker image & publish it
+name: (DEV) Create FRONT Docker image & publish it
 
 # Configures this workflow to run every time a change is pushed to the branch called `main`.
 on:
   push:
+    branches: ["dev"]
     # build une image pour back et front à chaque fois qu'on push une nouvelle version (tag) sur un commit
-    tags:
-      - "server-v*"
-      - "server-*.*.*"
     paths:
-      - server/**
+      - client/**
+  workflow_dispatch:
 
 # Defines two custom environment variables for the workflow. These are used for the Container registry domain, and a name for the Docker image that this workflow builds.
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}-server
+  IMAGE_NAME: ${{ github.repository }}-client
 
 # There is a single job in this workflow. It's configured to run on the latest available version of Ubuntu.
 jobs:
@@ -51,7 +50,7 @@ jobs:
           images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
           # tags:
           # - Branch name (e.g., `main`, `feature-branch-1`)
-          # - Semantic version (e.g., `v1.0.0`) if present in the git tags
+          # - Semantic version (e.g., `1.0.0`) if present in the git tags
           # - "latest" tag for the default branch (e.g., `main`)
           # - git SHA (e.g., `sha-abc1234`)
           tags: |
@@ -66,7 +65,15 @@ jobs:
         id: push
         uses: docker/build-push-action@v7
         with:
-          context: ./server
+          context: ./client
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      # # This step generates an artifact attestation for the image, which is an unforgeable statement about where and how it was built. It increases supply chain security for people who consume the image. For more information, see [Using artifact attestations to establish provenance for builds](/actions/security-guides/using-artifact-attestations-to-establish-provenance-for-builds).
+      # - name: Generate artifact attestation
+      #   uses: actions/attest@v4
+      #   with:
+      #     subject-name: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME}}
+      #     subject-digest: ${{ steps.push.outputs.digest }}
+      #     push-to-registry: true

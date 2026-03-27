@@ -4,14 +4,12 @@ name: Create FRONT Docker image & publish it
 # Configures this workflow to run every time a change is pushed to the branch called `main`.
 on:
   push:
-    branches: ["main"]
     # build une image pour back et front à chaque fois qu'on push une nouvelle version (tag) sur un commit
     tags:
       - "client-v*"
       - "client-*.*.*"
     paths:
       - client/**
-  workflow_dispatch:
 
 # Defines two custom environment variables for the workflow. These are used for the Container registry domain, and a name for the Docker image that this workflow builds.
 env:
