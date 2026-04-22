@@ -53,9 +53,9 @@ jobs:
           # - git SHA (e.g., `sha-abc1234`)
           tags: |
             type=ref,event=branch
-            type=semver,pattern={{version}}
-            type=semver,pattern=v{{major}}.{{minor}},enable={{is_default_branch}}
-            type=semver,pattern=v{{major}},enable={{is_default_branch}}
+            type=semver,pattern={{version}},match=client-(.*)
+            type=semver,pattern=v{{major}}.{{minor}},enable={{is_default_branch}},match=client-(.*)
+            type=semver,pattern=v{{major}},enable={{is_default_branch}},match=client-(.*)
             type=raw,value=latest,enable={{is_default_branch}}
             type=sha,format=long
 
